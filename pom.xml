@@ -86,6 +86,16 @@
 			<version>2.5</version>
 		</dependency>
 		<dependency>
+			<groupId>com.google.javascript</groupId>
+			<artifactId>closure-compiler</artifactId>
+			<version>v20170806</version>
+		</dependency>
+		<dependency>
+		    <groupId>com.google.closure-stylesheets</groupId>
+		    <artifactId>closure-stylesheets</artifactId>
+		    <version>1.5.0</version>
+		</dependency>
+		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.8.2</version>
