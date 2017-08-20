@@ -57,7 +57,10 @@ public final class OptionsUtil
 				stringBuilder.append(option);
 			}
 			stringBuilder.append(" ");
-			stringBuilder.append(value);
+			if(value != null)
+			{
+				stringBuilder.append(value);
+			}
 			stringBuilder.append(" ");
 		}
 		return stringBuilder.toString().trim().split(" ");

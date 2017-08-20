@@ -1,5 +1,7 @@
 package com.bachue.closuremavenplugin;
 
+import java.security.Permission;
+
 /*-
  * #%L
  * closure-maven-plugin Maven Plugin
@@ -34,7 +36,7 @@ import com.google.common.css.compiler.commandline.ClosureCommandLineCompiler;
 /**
  * CSS Mojo class
  * @author Alejandro Vivas
- * @version 19/08/2017 0.0.1-SNAPSHOT
+ * @version 20/08/2017 0.0.1-SNAPSHOT
  * @since 19/08/2017 0.0.1-SNAPSHOT
  */
 @Mojo(name = "css", defaultPhase = LifecyclePhase.COMPILE)
@@ -43,6 +45,40 @@ public class CSSClosureMojo extends AbstractMojo
 	/** Map with options to */
 	@Parameter(property = "cssOptions", required = true)
 	private Map<String, String> cssOptions;
+
+	/**
+	 * Class to avoid System.exit call of closure Stylesheet
+	 * @author Alejandro Vivas
+	 * @version 20/08/2017 0.0.1-SNAPSHOT
+	 * @since 19/08/2017 0.0.1-SNAPSHOT
+	 */
+	class InternalSecurityManager extends SecurityManager
+	{	
+		/**
+		 * To avoid System.exit call
+		 * @author Alejandro Vivas
+		 * @version 20/08/2017 0.0.1-SNAPSHOT
+		 * @since 19/08/2017 0.0.1-SNAPSHOT
+		 * @see java.lang.SecurityManager#checkExit(int)
+		 */
+		@Override
+		public void checkExit(int status)
+		{
+			throw new SecurityException();
+		}
+		
+		/**
+		 * To avoid error AccessControlException
+		 * @author Alejandro Vivas
+		 * @version 20/08/2017 0.0.1-SNAPSHOT
+		 * @since 19/08/2017 0.0.1-SNAPSHOT
+		 * @see java.lang.SecurityManager#checkPermission(java.security.Permission)
+		 */
+		@Override
+		public void checkPermission(Permission perm)
+		{
+		}
+	}
 
 	/**
 	 * Execute closure stylesheets
@@ -61,7 +97,19 @@ public class CSSClosureMojo extends AbstractMojo
 
 		getLog().info("Options to css closure:" + StringUtils.join(args, " "));
 
-		ClosureCommandLineCompiler.main(args);
+		// Change security manager to avoid System.exit
+		SecurityManager securityManagerOriginal = System.getSecurityManager();
+		System.setSecurityManager(new InternalSecurityManager());
+		try
+		{
+			// Run closure stylesheet
+			ClosureCommandLineCompiler.main(args);
+		}
+		catch (SecurityException e) 
+		{
+			// Return original security manager
+			System.setSecurityManager(securityManagerOriginal);
+		}
 	}
 
 	/**
