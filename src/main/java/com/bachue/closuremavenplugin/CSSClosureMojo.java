@@ -101,14 +101,15 @@ public class CSSClosureMojo extends AbstractMojo
 		SecurityManager securityManagerOriginal = System.getSecurityManager();
 		System.setSecurityManager(new InternalSecurityManager());
 		try
-		{
-			// Run closure stylesheet
-			ClosureCommandLineCompiler.main(args);
+		{			
+			ClosureCommandLineCompiler.main(args);// Run closure stylesheet
 		}
 		catch (SecurityException e) 
 		{
-			// Return original security manager
-			System.setSecurityManager(securityManagerOriginal);
+		}
+		finally 
+		{			
+			System.setSecurityManager(securityManagerOriginal);// Return original security manager
 		}
 	}
 
