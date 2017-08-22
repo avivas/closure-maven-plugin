@@ -117,7 +117,7 @@ You need to use ${project.basedir} for example or you need to use abosolute a pa
 
 This configuration use closure-compiler version v20160822 and closure-stylesheets version 1.4.0
 
-```
+```xml
 <build>
   <plugins>
     <plugin>
