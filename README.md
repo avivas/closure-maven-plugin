@@ -43,7 +43,7 @@ Add plugin to build section:
           
          <!-- Put css options -->
          <cssArgs>
-	      </cssArgs>          
+	 </cssArgs>          
          <cssOptions>       					
          </cssOptions>
         </configuration>
