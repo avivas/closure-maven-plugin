@@ -35,12 +35,17 @@ Add plugin to build section:
         <artifactId>closure-maven-plugin</artifactId>
         <version>0.0.1-SNAPSHOT</version>
         <configuration>
-          <jsOptions>
-            <!-- Put js options -->
+          <!-- Put js options -->
+          <jsArgs>
+          </jsArgs>
+          <jsOptions>           
           </jsOptions>
-          <cssOptions>
-            <!-- Put css options -->					
-          </cssOptions>
+          
+         <!-- Put css options -->
+         <cssArgs>
+	      </cssArgs>          
+         <cssOptions>       					
+         </cssOptions>
         </configuration>
         <executions>
           <execution>
@@ -59,8 +64,8 @@ Add plugin to build section:
 
 Put in jsOptions and cssOptions where for example if you want to execute:
 ```
-java -jar closure-compiler-v20170806.jar --js file.js --js_output_file file.js
-java -jar closure-stylesheets.jar file.css --output-file file.min.css
+java -jar closure-compiler-v20170806.jar file1.js  file2.js  --js_output_file file.min.js
+java -jar closure-stylesheets.jar        file1.css file2.css --output-file    file.min.css
 ```
 Then you need to configure:
 
@@ -72,14 +77,21 @@ Then you need to configure:
         <artifactId>closure-maven-plugin</artifactId>
         <version>0.0.1-SNAPSHOT</version>
         <configuration>
+          <jsArgs>
+            <param>${project.basedir}/src/main/javascript/app/file1.js</param>
+            <param>${project.basedir}/src/main/javascript/app/file2.js</param>
+          </jsArgs>          
           <jsOptions>
-            <js>${project.basedir}/src/main/javascript/file.js</js>
             <js_output_file>${project.build.directory}/min-resources/javascript/file.min.js</js_output_file>
             <compilation_level>SIMPLE</compilation_level>
           </jsOptions>
+          
+          <cssArgs>
+            <param>${project.basedir}/src/main/css/file1.css</param>
+            <param>${project.basedir}/src/main/css/file2.css</param>
+          </cssArgs>          
           <cssOptions>
-            <output-file>${project.basedir}/src/main/css/file.min.css</output-file>
-            <arg>${project.build.directory}/min-resources/css/file.css</arg>						
+            <output-file>${project.basedir}/src/main/css/file.min.css</output-file>						
           </cssOptions>
         </configuration>
         <executions>

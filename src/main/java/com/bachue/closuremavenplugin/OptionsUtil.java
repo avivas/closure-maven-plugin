@@ -63,6 +63,6 @@ public final class OptionsUtil
 			}
 			stringBuilder.append(" ");
 		}
-		return stringBuilder.toString().trim().split(" ");
+		return stringBuilder.toString().trim().replace('\n',' ').split(" ");
 	}
 }

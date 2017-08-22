@@ -1,6 +1,8 @@
 package com.bachue.closuremavenplugin;
 
+import java.io.File;
 import java.security.Permission;
+import java.util.List;
 
 /*-
  * #%L
@@ -36,7 +38,7 @@ import com.google.common.css.compiler.commandline.ClosureCommandLineCompiler;
 /**
  * CSS Mojo class
  * @author Alejandro Vivas
- * @version 20/08/2017 0.0.1-SNAPSHOT
+ * @version 21/08/2017 0.0.1-SNAPSHOT
  * @since 19/08/2017 0.0.1-SNAPSHOT
  */
 @Mojo(name = "css", defaultPhase = LifecyclePhase.COMPILE)
@@ -45,15 +47,18 @@ public class CSSClosureMojo extends AbstractMojo
 	/** Map with options to */
 	@Parameter(property = "cssOptions", required = true)
 	private Map<String, String> cssOptions;
+	/** Map with options to */
+	@Parameter(property = "cssArgs", required = true)
+	private List<String> cssArgs;
 
 	/**
 	 * Class to avoid System.exit call of closure Stylesheet
 	 * @author Alejandro Vivas
-	 * @version 20/08/2017 0.0.1-SNAPSHOT
+	 * @version 21/08/2017 0.0.1-SNAPSHOT
 	 * @since 19/08/2017 0.0.1-SNAPSHOT
 	 */
 	class InternalSecurityManager extends SecurityManager
-	{	
+	{
 		/**
 		 * To avoid System.exit call
 		 * @author Alejandro Vivas
@@ -66,7 +71,7 @@ public class CSSClosureMojo extends AbstractMojo
 		{
 			throw new SecurityException();
 		}
-		
+
 		/**
 		 * To avoid error AccessControlException
 		 * @author Alejandro Vivas
@@ -83,7 +88,7 @@ public class CSSClosureMojo extends AbstractMojo
 	/**
 	 * Execute closure stylesheets
 	 * @author Alejandro Vivas
-	 * @version 19/08/2017 0.0.1-SNAPSHOT
+	 * @version 21/08/2017 0.0.1-SNAPSHOT
 	 * @since 19/08/2017 0.0.1-SNAPSHOT
 	 */
 	public void execute() throws MojoExecutionException
@@ -93,22 +98,34 @@ public class CSSClosureMojo extends AbstractMojo
 			throw new MojoExecutionException("Empty css-options");
 		}
 
-		String[] args = OptionsUtil.optionsToStringArray(getCssOptions());
+		String[] args = ArrayUtil.concat(getCssArgs().toArray(new String[getCssArgs().size()]), OptionsUtil.optionsToStringArray(getCssOptions()));
 
 		getLog().info("Options to css closure:" + StringUtils.join(args, " "));
+
+		if (getCssOptions().containsKey("output-file"))
+		{
+			try
+			{
+				new File(getCssOptions().get("output-file")).getParentFile().mkdirs();
+			}
+			catch (SecurityException e)
+			{
+				throw new MojoExecutionException("Error to create folder:" + getCssOptions().get("output-file"));
+			}
+		}
 
 		// Change security manager to avoid System.exit
 		SecurityManager securityManagerOriginal = System.getSecurityManager();
 		System.setSecurityManager(new InternalSecurityManager());
 		try
-		{			
+		{
 			ClosureCommandLineCompiler.main(args);// Run closure stylesheet
 		}
-		catch (SecurityException e) 
+		catch (SecurityException e)
 		{
 		}
-		finally 
-		{			
+		finally
+		{
 			System.setSecurityManager(securityManagerOriginal);// Return original security manager
 		}
 	}
@@ -135,5 +152,27 @@ public class CSSClosureMojo extends AbstractMojo
 	public Map<String, String> getCssOptions()
 	{
 		return cssOptions;
+	}
+
+	/**
+	 * @param cssArgs the cssArgs to set
+	 * @author Alejandro Vivas
+	 * @version 21/08/2017 0.0.1-SNAPSHOT
+	 * @since 21/08/2017 0.0.1-SNAPSHOT
+	 */
+	public void setCssArgs(List<String> cssArgs)
+	{
+		this.cssArgs = cssArgs;
+	}
+
+	/**
+	 * @return the cssArgs
+	 * @author Alejandro Vivas
+	 * @version 21/08/2017 0.0.1-SNAPSHOT
+	 * @since 21/08/2017 0.0.1-SNAPSHOT
+	 */
+	public List<String> getCssArgs()
+	{
+		return cssArgs;
 	}
 }

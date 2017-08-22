@@ -1,5 +1,7 @@
 package com.bachue.closuremavenplugin;
 
+import java.util.List;
+
 /*-
  * #%L
  * closure-maven-plugin Maven Plugin
@@ -44,6 +46,9 @@ public class JSClosureMojo extends AbstractMojo
 	/** Map with options to */
 	@Parameter(property = "jsOptions", required = true)
 	private Map<String, String> jsOptions;
+	/** Map with options to */
+	@Parameter(property = "jsArgs", required = true)
+	private List<String> jsArgs;
 
 	/**
 	 * Class to create instance of CommandLineRunner
@@ -64,7 +69,14 @@ public class JSClosureMojo extends AbstractMojo
 		{
 			super(args);
 			// To avoid exit
-			this.setExitCodeReceiver(new Function<Integer, Void>() {@Override	public Void apply(Integer arg0){return null;}});
+			this.setExitCodeReceiver(new Function<Integer, Void>()
+			{
+				@Override
+				public Void apply(Integer arg0)
+				{
+					return null;
+				}
+			});
 		}
 	}
 
@@ -81,7 +93,7 @@ public class JSClosureMojo extends AbstractMojo
 			throw new MojoExecutionException("Empty js-options");
 		}
 
-		String[] args = OptionsUtil.optionsToStringArray(getJsOptions());
+		String[] args = ArrayUtil.concat(getJsArgs().toArray(new String[getJsArgs().size()]), OptionsUtil.optionsToStringArray(getJsOptions()));
 
 		getLog().info("Options to js closure:" + StringUtils.join(args, " "));
 
@@ -99,6 +111,8 @@ public class JSClosureMojo extends AbstractMojo
 	/**
 	 * Map with jsOptions
 	 * @param jsOptions
+	 * @version 21/08/2017 0.0.1-SNAPSHOT
+	 * @since 21/08/2017 0.0.1-SNAPSHOT
 	 */
 	public void setJsOptions(Map<String, String> jsOptions)
 	{
@@ -108,9 +122,32 @@ public class JSClosureMojo extends AbstractMojo
 	/**
 	 * Map with jsOptions
 	 * @return Map with jsOptions
+	 * @version 21/08/2017 0.0.1-SNAPSHOT
+	 * @since 21/08/2017 0.0.1-SNAPSHOT
 	 */
 	public Map<String, String> getJsOptions()
 	{
 		return jsOptions;
+	}
+
+	/**
+	 * @param jsArgs the jsArgs to set
+	 * @version 21/08/2017 0.0.1-SNAPSHOT
+	 * @since 21/08/2017 0.0.1-SNAPSHOT
+	 */
+	public void setJsArgs(List<String> jsArgs)
+	{
+		this.jsArgs = jsArgs;
+	}
+
+	/**
+	 * @return the jsArgs
+	 * @author Alejandro Vivas
+	 * @version 21/08/2017 0.0.1-SNAPSHOT
+	 * @since 21/08/2017 0.0.1-SNAPSHOT
+	 */
+	public List<String> getJsArgs()
+	{
+		return jsArgs;
 	}
 }
