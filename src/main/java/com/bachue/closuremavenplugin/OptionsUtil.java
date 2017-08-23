@@ -19,7 +19,8 @@ package com.bachue.closuremavenplugin;
  * limitations under the License.
  * #L%
  */
-
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -47,22 +48,19 @@ public final class OptionsUtil
 	 */
 	public static String[] optionsToStringArray(Map<String, String> options)
 	{
-		StringBuilder stringBuilder = new StringBuilder();
+		List<String> stringBuilder = new ArrayList<>();
 		for (String option : options.keySet())
 		{
 			String value = options.get(option);
-			if(!option.equals("arg"))
+			if (!option.equals("arg"))
 			{
-				stringBuilder.append("--");
-				stringBuilder.append(option);
+				stringBuilder.add("--" + option);
 			}
-			stringBuilder.append(" ");
-			if(value != null)
+			if (value != null)
 			{
-				stringBuilder.append(value);
+				stringBuilder.add(value);
 			}
-			stringBuilder.append(" ");
 		}
-		return stringBuilder.toString().trim().replace('\n',' ').split(" ");
+		return stringBuilder.toArray(new String[stringBuilder.size()]);
 	}
 }
