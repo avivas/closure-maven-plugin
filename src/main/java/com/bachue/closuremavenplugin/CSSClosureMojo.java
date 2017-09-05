@@ -2,6 +2,8 @@ package com.bachue.closuremavenplugin;
 
 import java.io.File;
 import java.security.Permission;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /*-
@@ -31,26 +33,41 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.StringUtils;
 
+import com.bachue.closuremavenplugin.util.FileUtil;
 import com.google.common.css.compiler.commandline.ClosureCommandLineCompiler;
 
 /**
  * CSS Mojo class
  * @author Alejandro Vivas
- * @version 21/08/2017 0.0.1-SNAPSHOT
+ * @version 05/09/2017 0.0.1-SNAPSHOT
  * @since 19/08/2017 0.0.1-SNAPSHOT
  */
 @Mojo(name = "css", defaultPhase = LifecyclePhase.COMPILE)
 public class CSSClosureMojo extends AbstractMojo
 {
+	/** Object to get project path */
+	@Parameter(defaultValue = "${project}", readonly = true, required = true)
+	private MavenProject project;
+	
 	/** Map with options to */
 	@Parameter(property = "cssOptions", required = true)
 	private Map<String, String> cssOptions;
 	/** Map with options to */
 	@Parameter(property = "cssArgs", required = true)
 	private List<String> cssArgs;
-
+	/** CSS source directories */
+	@Parameter(property = "cssSourceDirectories", required = false)
+	private List<String> cssSourceDirectories;
+	/** CSS extension to find sources */
+	@Parameter(property = "cssExtensions", required = false)
+	private List<String> cssExtensions = new ArrayList<>();
+	/** Use default configuration values */
+	@Parameter(property = "useCssDefaultValues", required = false, defaultValue = "true")
+	private boolean useCssDefaultValues;	
+	
 	/**
 	 * Class to avoid System.exit call of closure Stylesheet
 	 * @author Alejandro Vivas
@@ -88,17 +105,20 @@ public class CSSClosureMojo extends AbstractMojo
 	/**
 	 * Execute closure stylesheets
 	 * @author Alejandro Vivas
-	 * @version 21/08/2017 0.0.1-SNAPSHOT
+	 * @version 05/09/2017 0.0.1-SNAPSHOT
 	 * @since 19/08/2017 0.0.1-SNAPSHOT
 	 */
 	public void execute() throws MojoExecutionException
 	{
-		if (getCssOptions().size() == 0)
+		defineDefaultValues();
+				
+		String[] args = createArgsToCssClosure();
+		
+		if (args.length == 0)
 		{
-			throw new MojoExecutionException("Empty css-options");
+			getLog().warn("Empty args to css closure. No CSS files found or arguments to CSS closure");
+			return;
 		}
-
-		String[] args = ArrayUtil.concat(getCssArgs().toArray(new String[getCssArgs().size()]), OptionsUtil.optionsToStringArray(getCssOptions()));
 
 		getLog().info("Options to css closure:" + StringUtils.join(args, " "));
 
@@ -128,6 +148,60 @@ public class CSSClosureMojo extends AbstractMojo
 		{
 			System.setSecurityManager(securityManagerOriginal);// Return original security manager
 		}
+	}
+	
+	/**
+	 * Define default values
+	 * @author Alejandro Vivas
+	 * @version 5/09/2017 0.0.1-SNAPSHOT
+	 * @since 5/09/2017 0.0.1-SNAPSHOT
+	 */
+	private void defineDefaultValues()
+	{
+		if(isUseCssDefaultValues())
+		{
+			if( (getCssSourceDirectories() == null) || getCssSourceDirectories().isEmpty() )
+			{
+				setCssSourceDirectories(new ArrayList<String>());
+				getCssSourceDirectories().add(getProject().getBasedir() +"/src/main/css" );
+			}
+			
+			if( (getCssExtensions() == null) || getCssExtensions().isEmpty() )
+			{
+				setCssExtensions(new ArrayList<String>());
+				getCssExtensions().add("css");
+			}
+		}
+	}
+	
+	/**
+	 * Create arguments to css closure
+	 * @author Alejandro Vivas
+	 * @version 5/09/2017 0.0.1-SNAPSHOT
+	 * @since 5/09/2017 0.0.1-SNAPSHOT
+	 * @return String array with arguments to css closure
+	 */
+	private String [] createArgsToCssClosure()
+	{
+		String [] argsArray = getCssArgs().toArray(new String[getCssArgs().size()]);
+		String [] cssOptionsArray = OptionsUtil.optionsToStringArray(getCssOptions());
+		String [] argsToCssClosure = ArrayUtil.concat(argsArray, cssOptionsArray);
+
+		if( !getCssSourceDirectories().isEmpty() && !getCssExtensions().isEmpty() )
+		{
+			Collection<File> cssFiles = FileUtil.getFiles(getCssSourceDirectories(), getCssExtensions(),getLog());
+			if(!cssFiles.isEmpty())
+			{
+				String [] arrayCssFiles = new String[cssFiles.size()];
+				int i = 0;
+				for(File file : cssFiles)
+				{
+					arrayCssFiles[i++] = file.getAbsolutePath();
+				}
+				argsToCssClosure = ArrayUtil.concat(arrayCssFiles, argsToCssClosure);
+			}
+		}
+		return argsToCssClosure;
 	}
 
 	/**
@@ -174,5 +248,93 @@ public class CSSClosureMojo extends AbstractMojo
 	public List<String> getCssArgs()
 	{
 		return cssArgs;
+	}
+
+	/**
+	 * @author Alejandro Vivas
+	 * @version 5/09/2017 0.0.1-SNAPSHOT
+	 * @since 5/09/2017 0.0.1-SNAPSHOT
+	 * @return the cssSourceDirectories
+	 */
+	public List<String> getCssSourceDirectories()
+	{
+		return cssSourceDirectories;
+	}
+
+	/**
+	 * @author Alejandro Vivas
+	 * @version 5/09/2017 0.0.1-SNAPSHOT
+	 * @since 5/09/2017 0.0.1-SNAPSHOT
+	 * @param cssSourceDirectories the cssSourceDirectories to set
+	 */
+	public void setCssSourceDirectories(List<String> cssSourceDirectories)
+	{
+		this.cssSourceDirectories = cssSourceDirectories;
+	}
+
+	/**
+	 * @author Alejandro Vivas
+	 * @version 5/09/2017 0.0.1-SNAPSHOT
+	 * @since 5/09/2017 0.0.1-SNAPSHOT
+	 * @return the cssExtensions
+	 */
+	public List<String> getCssExtensions()
+	{
+		return cssExtensions;
+	}
+
+	/**
+	 * @author Alejandro Vivas
+	 * @version 5/09/2017 0.0.1-SNAPSHOT
+	 * @since 5/09/2017 0.0.1-SNAPSHOT
+	 * @param cssExtensions the cssExtensions to set
+	 */
+	public void setCssExtensions(List<String> cssExtensions)
+	{
+		this.cssExtensions = cssExtensions;
+	}
+
+	/**
+	 * @author Alejandro Vivas
+	 * @version 5/09/2017 0.0.1-SNAPSHOT
+	 * @since 5/09/2017 0.0.1-SNAPSHOT
+	 * @return the useCssDefaultValues
+	 */
+	public boolean isUseCssDefaultValues()
+	{
+		return useCssDefaultValues;
+	}
+
+	/**
+	 * @author Alejandro Vivas
+	 * @version 5/09/2017 0.0.1-SNAPSHOT
+	 * @since 5/09/2017 0.0.1-SNAPSHOT
+	 * @param useCssDefaultValues the useCssDefaultValues to set
+	 */
+	public void setUseCssDefaultValues(boolean useCssDefaultValues)
+	{
+		this.useCssDefaultValues = useCssDefaultValues;
+	}
+	
+	/**
+	 * @author Alejandro Vivas
+	 * @version 5/09/2017 0.0.1-SNAPSHOT
+	 * @since 5/09/2017 0.0.1-SNAPSHOT
+	 * @param project the project to set
+	 */
+	public void setProject(MavenProject project)
+	{
+		this.project = project;
+	}
+	
+	/**
+	 * @author Alejandro Vivas
+	 * @version 5/09/2017 0.0.1-SNAPSHOT
+	 * @since 5/09/2017 0.0.1-SNAPSHOT
+	 * @return the project
+	 */
+	public MavenProject getProject()
+	{
+		return project;
 	}
 }

@@ -40,7 +40,6 @@ Add plugin to build section:
           </jsArgs>
           <jsOptions>           
           </jsOptions>
-          
          <!-- Put css options -->
          <cssArgs>
 	 </cssArgs>          
@@ -77,21 +76,22 @@ Then you need to configure:
         <artifactId>closure-maven-plugin</artifactId>
         <version>0.0.1-SNAPSHOT</version>
         <configuration>
+          <useJsDefaultValues>false</useJsDefaultValues>
           <jsArgs>
             <param>${project.basedir}/src/main/javascript/app/file1.js</param>
             <param>${project.basedir}/src/main/javascript/app/file2.js</param>
           </jsArgs>          
           <jsOptions>
-            <js_output_file>${project.build.directory}/min-resources/javascript/file.min.js</js_output_file>
+            <js_output_file>${project.build.directory}/javascript/file.min.js</js_output_file>
             <compilation_level>SIMPLE</compilation_level>
-          </jsOptions>
-          
+          </jsOptions> 
+          <useCssDefaultValues>false</useCssDefaultValues>
           <cssArgs>
             <param>${project.basedir}/src/main/css/file1.css</param>
             <param>${project.basedir}/src/main/css/file2.css</param>
           </cssArgs>          
           <cssOptions>
-            <output-file>${project.basedir}/src/main/css/file.min.css</output-file>						
+            <output-file>${project.build.directory}/css/file.min.css</output-file>						
           </cssOptions>
         </configuration>
         <executions>
@@ -108,6 +108,39 @@ Then you need to configure:
    </plugins>
 </build>
 ```
+If you put JavaScript files into ${project.basedir}/src/main/javascript/ with .js extension and you put CSS files into ${project.basedir}/src/main/css/ with .css extension use:
+
+```xml
+<build>
+  <plugins>
+    <plugin>
+      <groupId>com.bachue</groupId>
+        <artifactId>closure-maven-plugin</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+        <configuration>        
+          <jsOptions>
+            <js_output_file>${project.build.directory}/javascript/file.min.js</js_output_file>
+            <compilation_level>SIMPLE</compilation_level>
+          </jsOptions>                  
+          <cssOptions>
+            <output-file>${project.build.directory}/css/file.min.css</output-file>						
+          </cssOptions>
+        </configuration>
+        <executions>
+          <execution>
+            <id>min-css</id>
+            <phase>package</phase>
+            <goals>
+              <goal>css</goal>
+              <goal>js</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+   </plugins>
+</build>
+```
+
 
 ### Note:
 You need to use ${project.basedir} for example or you need to use abosolute a path.
