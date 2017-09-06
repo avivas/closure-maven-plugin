@@ -42,7 +42,7 @@ import com.google.javascript.jscomp.CommandLineRunner;
 /**
  * JS Mojo class
  * @author Alejandro Vivas
- * @version 05/09/2017 0.0.1-SNAPSHOT
+ * @version 06/09/2017 0.0.1-SNAPSHOT
  * @since 19/08/2017 0.0.1-SNAPSHOT
  */
 @Mojo(name = "js", defaultPhase = LifecyclePhase.COMPILE)
@@ -155,7 +155,7 @@ public class JSClosureMojo extends AbstractMojo
 	/**
 	 * Create arguments to javascript closure
 	 * @author Alejandro Vivas
-	 * @version 5/09/2017 0.0.1-SNAPSHOT
+	 * @version 6/09/2017 0.0.1-SNAPSHOT
 	 * @since 5/09/2017 0.0.1-SNAPSHOT
 	 * @return String array with arguments to javascript closure
 	 */
@@ -179,6 +179,13 @@ public class JSClosureMojo extends AbstractMojo
 				argsToJsClosure = ArrayUtil.concat(arrayJsFiles, argsToJsClosure);
 			}
 		}
+		
+		// Delete backslash, avoid problems when generate source map
+		for (int i = 0; i < argsToJsClosure.length; i++)
+		{
+			argsToJsClosure[i] = argsToJsClosure[i].replaceAll("\\\\", "/");
+		}
+		
 		return argsToJsClosure;
 	}
 
