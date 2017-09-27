@@ -42,7 +42,7 @@ import com.google.common.css.compiler.commandline.ClosureCommandLineCompiler;
 /**
  * CSS Mojo class
  * @author Alejandro Vivas
- * @version 05/09/2017 0.0.1-SNAPSHOT
+ * @version 26/09/2017 0.0.1-SNAPSHOT
  * @since 19/08/2017 0.0.1-SNAPSHOT
  */
 @Mojo(name = "css", defaultPhase = LifecyclePhase.COMPILE)
@@ -153,7 +153,7 @@ public class CSSClosureMojo extends AbstractMojo
 	/**
 	 * Define default values
 	 * @author Alejandro Vivas
-	 * @version 5/09/2017 0.0.1-SNAPSHOT
+	 * @version 26/09/2017 0.0.1-SNAPSHOT
 	 * @since 5/09/2017 0.0.1-SNAPSHOT
 	 */
 	private void defineDefaultValues()
@@ -164,6 +164,22 @@ public class CSSClosureMojo extends AbstractMojo
 			{
 				setCssSourceDirectories(new ArrayList<String>());
 				getCssSourceDirectories().add(getProject().getBasedir() +"/src/main/css" );
+			}
+			else
+			{
+				List<String> newList = new ArrayList<>(getCssSourceDirectories().size());
+				for(String sourceDirectory : getCssSourceDirectories())
+				{
+					if( !new File(sourceDirectory).isAbsolute() )
+					{
+						newList.add(getProject().getBasedir() + File.separator + sourceDirectory);
+					}
+					else
+					{
+						newList.add(sourceDirectory);
+					}
+				}
+				setCssSourceDirectories(newList);
 			}
 			
 			if( (getCssExtensions() == null) || getCssExtensions().isEmpty() )

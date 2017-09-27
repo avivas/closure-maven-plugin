@@ -42,7 +42,7 @@ import com.google.javascript.jscomp.CommandLineRunner;
 /**
  * JS Mojo class
  * @author Alejandro Vivas
- * @version 06/09/2017 0.0.1-SNAPSHOT
+ * @version 26/09/2017 0.0.1-SNAPSHOT
  * @since 19/08/2017 0.0.1-SNAPSHOT
  */
 @Mojo(name = "js", defaultPhase = LifecyclePhase.COMPILE)
@@ -131,7 +131,7 @@ public class JSClosureMojo extends AbstractMojo
 	/**
 	 * Define default values
 	 * @author Alejandro Vivas
-	 * @version 5/09/2017 0.0.1-SNAPSHOT
+	 * @version 26/09/2017 0.0.1-SNAPSHOT
 	 * @since 5/09/2017 0.0.1-SNAPSHOT
 	 */
 	private void defineDefaultValues()
@@ -142,6 +142,22 @@ public class JSClosureMojo extends AbstractMojo
 			{
 				setJsSourceDirectories(new ArrayList<String>());
 				getJsSourceDirectories().add(getProject().getBasedir() +"/src/main/javascript" );
+			}
+			else
+			{
+				List<String> newList = new ArrayList<>(getJsSourceDirectories().size());
+				for(String sourceDirectory : getJsSourceDirectories())
+				{
+					if( !new File(sourceDirectory).isAbsolute() )
+					{
+						newList.add(getProject().getBasedir() + File.separator + sourceDirectory);
+					}
+					else
+					{
+						newList.add(sourceDirectory);
+					}
+				}
+				setJsSourceDirectories(newList);
 			}
 			
 			if( (getJsExtensions() == null) || getJsExtensions().isEmpty() )
